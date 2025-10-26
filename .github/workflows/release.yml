@@ -1,13 +1,14 @@
-name: Build Firmware
-on: [push, pull_request]
+name: Release PicoRVD
+on:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
     strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-13]
-    runs-on: ${{ matrix.os }}
+      fail-fast: true
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout PicoRVD
         uses: actions/checkout@v5
@@ -25,31 +26,8 @@ jobs:
         working-directory: ${{github.workspace}}/pico-sdk
         run: git submodule update --init
 
-      - name: Install dependencies (Windows)
-        if: ${{ matrix.os == 'windows-latest' }}
-        working-directory: ${{github.workspace}}/PicoRVD
-        run: choco install .github/workflows/choco_packages.config
-
-      - name: Install dependencies (Linux)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential git cmake gcc-arm-none-eabi gcc-riscv64-unknown-elf
-
-      - name: Install dependencies (Mac)
-        if: ${{ matrix.os == 'macos-13' }}
-        run: |
-          brew install cmake make
-          brew tap ArmMbed/homebrew-formulae
-          brew install arm-none-eabi-gcc
-          brew tap riscv-software-src/riscv
-          brew install riscv-tools
-
-      - name: Build Project (CH32V003 Blinky)
-        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-13' }}
-        working-directory: ${{github.workspace}}/PicoRVD
-        shell: bash
-        run: |
-          cd example
-          ./build.sh
 
       - name: Build Project (PicoRVD)
         working-directory: ${{github.workspace}}/PicoRVD
@@ -65,8 +43,14 @@ jobs:
           make -j8 -C bin
 
       - name: Upload UF2 File
-        if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v5
         with:
           name: PicoRVD.uf2
           path: ${{github.workspace}}/PicoRVD/bin/picorvd.uf2
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Release ${{ github.ref_name }}"
+          tag_name: ${{ github.ref_name }}
+          files: ${{ github.workspace }}/PicoRVD/bin/picorvd.uf2
