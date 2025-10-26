@@ -12,9 +12,9 @@
 #include "debug_defines.h"
 #include "utils.h"
 
-const int PIN_SWIO = 28;
-const int PIN_UART_TX = 0;
-const int PIN_UART_RX = 1;
+const int PIN_SWIO = 3; // Use the same pins as the Pico Debug Probe/yapicoprobe
+const int PIN_UART_TX = 4;
+const int PIN_UART_RX = 5;
 const int ch32v003_flash_size = 16*1024;
 
 void delay_us(int us) {
