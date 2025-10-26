@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD 20)
 option(INCLUDE_BLINKY_BINARY "Include Blinky binary in PicoRVD" ON) 
 
 pico_sdk_init()
+
 add_executable(
   picorvd
   src/main.cpp
